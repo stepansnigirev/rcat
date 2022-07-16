@@ -1,20 +1,22 @@
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.measure import Measurement
-from rich.style import Style
-from rich.color import Color
-from rich.segment import Segment
 import cv2
-import sys
 
 class Image:
     def __init__(self, img):
         self.img = img
+
+    def __bool__(self):
+        return self.img is not None
 
     @classmethod
     def from_file(cls, fname):
         return cls(cv2.imread(fname))
 
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+        from rich.style import Style
+        from rich.color import Color
+        from rich.segment import Segment
         maxsize = ((options.max_height-1)*2, options.max_width)
         original = self.img.shape[:2]
         scale = min([sz/o for sz, o in zip(maxsize, original)])
@@ -33,14 +35,24 @@ class Image:
         return Measurement(8, options.max_width)
 
 def main():
+    import sys
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} <path/to/file>")
         sys.exit()
     fname = sys.argv[-1]
-    c = Console()
-    img = Image.from_file(fname)
-    maxsize = (c.width, c.height*2)
-    c.print(img)
+    console = Console()
+    if fname.lower().endswith(".md"):
+        from rich.markdown import Markdown
+        with open(fname, "r") as f:
+            content = Markdown(f.read())
+    else:
+        content = Image.from_file(fname)
+        # if we failed to load an image
+        # try syntax highlighting
+        if not content:
+            from rich.syntax import Syntax
+            content = Syntax.from_path(fname)
+    console.print(content)
 
 if __name__ == "__main__":
     main()
