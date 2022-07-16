@@ -22,6 +22,9 @@ setup(
     packages=find_namespace_packages("src", include=["*"]),
     package_dir={"": "src"},
     install_requires=reqs,
+    entry_points = {
+        'console_scripts': ['rcat=rcat:main'],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
