@@ -45,6 +45,12 @@ def main():
         from rich.markdown import Markdown
         with open(fname, "r") as f:
             content = Markdown(f.read())
+    elif fname.startswith("camera:"):
+        cam_idx = int(fname.split(":")[1] or 0)
+        vid = cv2.VideoCapture(cam_idx)
+        ret, frame = vid.read()
+        content = Image(frame)
+        vid.release()
     else:
         content = Image.from_file(fname)
         # if we failed to load an image
